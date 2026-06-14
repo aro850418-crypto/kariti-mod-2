@@ -22,17 +22,21 @@ jobs:
           curl -L "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.2.0/forge-1.20.1-47.2.0-mdk.zip" -o forge-mdk.zip
           unzip forge-mdk.zip -d forge-mdk
 
-      - name: Copy mod files into MDK
+      - name: Find and copy mod files
         run: |
-          rm -rf forge-mdk/src/main/java
-          rm -rf forge-mdk/src/main/resources
-          mkdir -p forge-mdk/src/main/java
-          mkdir -p forge-mdk/src/main/resources
-          cp -r src/main/java/. forge-mdk/src/main/java/
-          cp -r src/main/resources/. forge-mdk/src/main/resources/
-          cp build.gradle forge-mdk/
-          cp gradle.properties forge-mdk/
-          cp settings.gradle forge-mdk/
+          echo "=== Files in repo ===" && ls -la
+          JAVA_FILE=$(find . -name "KaritiMod.java" | head -1)
+          echo "Found: $JAVA_FILE"
+          SRC_ROOT=$(echo $JAVA_FILE | sed 's|/main/java/com/kariti/mod/KaritiMod.java||')
+          BUILD_ROOT=$(echo $JAVA_FILE | sed 's|/src/main/java/com/kariti/mod/KaritiMod.java||')
+          echo "SRC_ROOT=$SRC_ROOT  BUILD_ROOT=$BUILD_ROOT"
+          rm -rf forge-mdk/src/main/java forge-mdk/src/main/resources
+          cp -r "$SRC_ROOT/main/java" forge-mdk/src/main/
+          cp -r "$SRC_ROOT/main/resources" forge-mdk/src/main/
+          cp "$BUILD_ROOT/build.gradle" forge-mdk/
+          cp "$BUILD_ROOT/gradle.properties" forge-mdk/
+          cp "$BUILD_ROOT/settings.gradle" forge-mdk/
+          echo "=== Result ===" && find forge-mdk/src -name "*.java" && cat forge-mdk/src/main/resources/META-INF/mods.toml
 
       - name: Make gradlew executable
         run: chmod +x forge-mdk/gradlew
