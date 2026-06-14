@@ -1,0 +1,45 @@
+name: Build Kariti Mod
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download Forge MDK
+        run: |
+          curl -L "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.2.0/forge-1.20.1-47.2.0-mdk.zip" -o forge-mdk.zip
+          unzip forge-mdk.zip -d forge-mdk
+
+      - name: Copy mod files into MDK
+        run: |
+          cp -r src forge-mdk/
+          cp build.gradle forge-mdk/
+          cp gradle.properties forge-mdk/
+          cp settings.gradle forge-mdk/
+
+      - name: Make gradlew executable
+        run: chmod +x forge-mdk/gradlew
+
+      - name: Build mod
+        run: |
+          cd forge-mdk
+          ./gradlew build --no-daemon
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: kariti-mod-jar
+          path: forge-mdk/build/libs/*.jar
+          if-no-files-found: error
