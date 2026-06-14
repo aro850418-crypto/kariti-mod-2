@@ -24,7 +24,10 @@ jobs:
 
       - name: Copy mod files into MDK
         run: |
-          cp -r src forge-mdk/
+          rm -rf forge-mdk/src/main/java/com/example
+          rm -f forge-mdk/src/main/resources/META-INF/mods.toml
+          rm -f forge-mdk/src/main/resources/pack.mcmeta
+          cp -r src/. forge-mdk/src/
           cp build.gradle forge-mdk/
           cp gradle.properties forge-mdk/
           cp settings.gradle forge-mdk/
